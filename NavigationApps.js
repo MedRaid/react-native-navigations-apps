@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import ActionSheet from 'react-native-actionsheet';
-import {actions, googleMapsTravelModes, mapsTravelModes} from "./NavigationAppsTools";
+import {actions, googleMapsTravelModes, mapsTravelModes, wazeActions,
+    googleMapsActions,
+    mapsActions} from "./NavigationAppsTools";
 import wazeIcon from "./assets/wazeIcon.png";
 import googleMapsIcon from "./assets/googleMapsIcon.png";
 import mapsIcon from "./assets/mapsIcon.png";
@@ -22,7 +24,7 @@ const waze = {
     title: 'waze',
     icon: wazeIcon,
     address: '',
-    action: actions.navigateByAddress,
+    action: wazeActions.navigateByAddress,
     lat: '',
     lon: '',
     travelModes: {},
@@ -34,7 +36,7 @@ const googleMaps = {
     lat: '',
     lon: '',
     travelMode: googleMapsTravelModes.driving,
-    action: actions.navigateByAddress
+    action: googleMapsActions.navigateByAddress
 };
 const maps = {
     title: 'maps',
@@ -43,7 +45,7 @@ const maps = {
     lat: '',
     lon: '',
     travelMode: mapsTravelModes.driving,
-    action: actions.navigateByAddress,
+    action: mapsActions.navigateByAddress,
 
 };
 
