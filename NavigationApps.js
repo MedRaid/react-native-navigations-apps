@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
     TouchableOpacity,
     Linking,
@@ -8,247 +8,210 @@ import {
     Modal,
     Text,
     StyleSheet,
-    ViewPropTypes
-} from "react-native";
-import PropTypes from "prop-types";
-import {
-    googleMapsActions,
-    mapsActions,
-    wazeActions
-} from "./NavigationAppsTools";
-import ActionSheet from "react-native-actionsheet";
+    ViewPropTypes,
+} from 'react-native';
+import PropTypes from 'prop-types';
+import ActionSheet from 'react-native-actionsheet';
+import {actions, googleMapsTravelModes, mapsTravelModes} from "./NavigationAppsTools";
+import wazeIcon from "./assets/wazeIcon.png";
+import googleMapsIcon from "./assets/googleMapsIcon.png";
+import mapsIcon from "./assets/mapsIcon.png";
+
+const waze = {
+
+    title: 'waze',
+    icon: wazeIcon,
+    address: '',
+    action: actions.navigateByAddress,
+    lat: '',
+    lon: '',
+    travelModes: {},
+};
+const googleMaps = {
+    title: 'google maps',
+    icon: googleMapsIcon,
+    address: '',
+    lat: '',
+    lon: '',
+    travelMode: googleMapsTravelModes.driving,
+    action: actions.navigateByAddress
+};
+const maps = {
+    title: 'maps',
+    icon: mapsIcon,
+    address: '',
+    lat: '',
+    lon: '',
+    travelMode: mapsTravelModes.driving,
+    action: actions.navigateByAddress,
+
+};
 
 class NavigationApps extends Component {
+
     constructor(props) {
         super(props);
         this.state = {
             navApps: {
-                waze: {
+                'waze': {
                     ...Platform.select({
                         ios: {
-                            appDeepLinkUri: "waze://",
-                            appDeepLinkUriToUse: "waze://?"
+                            storeUri: 'itms-apps://itunes.apple.com/us/app/id323229106?mt=8',
+                            appDeepLinkUri: 'waze://',
+                            appDeepLinkUriToUse: 'waze://?'
                         },
                         android: {
-                            appDeepLinkUri: "waze://",
-                            appDeepLinkUriToUse: "waze://?"
+                            appDeepLinkUri: 'waze://',
+                            appDeepLinkUriToUse: 'waze://?',
+                            storeUri: 'market://details?id=com.waze',
                         }
                     }),
-                    title: "waze",
-                    ...Platform.select({
-                        ios: {
-                            storeUri: "itms-apps://itunes.apple.com/us/app/id323229106?mt=8"
-                        },
-                        android: {
-                            storeUri: "market://details?id=com.waze"
-                        }
-                    }),
-                    icon: props.waze.icon
-                        ? props.waze.icon
-                        : require("./assets/wazeIcon.png"),
-                    travelModes: {},
-                    navigateByAddress: ({ address }) =>
-                        encodeURI(
-                            this.state.navApps.waze.appDeepLinkUriToUse +
-                            `q=${address}&navigate=yes`
-                        ),
-                    navigateByLatAndLon: ({ lat, lon }) =>
-                        encodeURI(
-                            this.state.navApps.waze.appDeepLinkUriToUse +
-                            `ll=${lat},${lon}&navigate=yes`
-                        ),
-                    searchLocationByLatAndLon: ({ lat, lon }) =>
-                        encodeURI(
-                            this.state.navApps.waze.appDeepLinkUriToUse + `ll=${lat},${lon}`
-                        )
+                    ...waze,
+                    ...props.waze,
+                    navigateByAddress: ({addressToNavigate}) => encodeURI(this.state.navApps.waze.appDeepLinkUriToUse + `q=${addressToNavigate}&navigate=yes`),
+                    navigateByLatAndLon: ({lat, lon}) => encodeURI(this.state.navApps.waze.appDeepLinkUriToUse + `ll=${lat},${lon}&navigate=yes`),
+                    searchLocationByLatAndLon: ({lat, lon}) => encodeURI(this.state.navApps.waze.appDeepLinkUriToUse + `ll=${lat},${lon}`)
                 },
-                googleMaps: {
+                'googleMaps': {
+
                     ...Platform.select({
                         ios: {
-                            appDeepLinkUri: "comgooglemaps://",
-                            appDeepLinkUriToUse: "comgooglemaps://?"
+                            appDeepLinkUri: 'comgooglemaps://',
+                            appDeepLinkUriToUse: 'comgooglemaps://?',
+                            storeUri: 'itms-apps://itunes.apple.com/us/app/id585027354?mt=8',
+                            navigateByAddress: ({addressToNavigate, travelMode}) => this.state.navApps.googleMaps.appDeepLinkUriToUse + `daddr=${addressToNavigate}&directionsmode=${travelMode}`,
+                            navigateByLatAndLon: ({addressToNavigate, travelMode, lat, lon}) => encodeURI(this.state.navApps.googleMaps.appDeepLinkUriToUse + `q=${addressToNavigate}&center=${lat},${lon}`),
+                            searchLocationByLatAndLon: ({lat, lon}) => encodeURI(this.state.navApps.googleMaps.appDeepLinkUriToUse + `search/?api=1&query=${lat},${lon}`)
                         },
                         android: {
-                            appDeepLinkUri: "https://www.google.com/maps/",
-                            appDeepLinkUriToUse: "https://www.google.com/maps/"
+                            appDeepLinkUri: 'https://www.google.com/maps/',
+                            appDeepLinkUriToUse: 'https://www.google.com/maps/',
+                            storeUri: 'market://details?id=com.google.android.apps.maps',
+                            navigateByAddress: ({address, travelMode}) => this.state.navApps.googleMaps.appDeepLinkUriToUse + `dir/?api=1&destination=${address}&travelmode=${travelMode}`,
+                            navigateByLatAndLon: ({address, travelMode, lat, lon}) => encodeURI(this.state.navApps.googleMaps.appDeepLinkUriToUse + `search/?api=1&query=${lat},${lon}`),
+                            searchLocationByLatAndLon: ({lat, lon}) => encodeURI(this.state.navApps.googleMaps.appDeepLinkUriToUse + `search/?api=1&query=${lat},${lon}`)
                         }
                     }),
-                    title: "google maps",
-                    ...Platform.select({
-                        ios: {
-                            storeUri: "itms-apps://itunes.apple.com/us/app/id585027354?mt=8"
-                        },
-                        android: {
-                            storeUri: "market://details?id=com.google.android.apps.maps"
-                        }
-                    }),
-                    ...Platform.select({
-                        ios: {
-                            navigateByAddress: ({ address, travelMode }) =>
-                                this.state.navApps.googleMaps.appDeepLinkUriToUse +
-                                `daddr=${address}&directionsmode=${travelMode}`,
-                            navigateByLatAndLon: ({ address, travelMode, lat, lon }) =>
-                                encodeURI(
-                                    this.state.navApps.googleMaps.appDeepLinkUriToUse +
-                                    `q=${address}&center=${lat},${lon}`
-                                ),
-                            searchLocationByLatAndLon: ({ lat, lon }) =>
-                                encodeURI(
-                                    this.state.navApps.googleMaps.appDeepLinkUriToUse +
-                                    `search/?api=1&query=${lat},${lon}`
-                                )
-                        },
-                        android: {
-                            navigateByAddress: ({ address, travelMode }) =>
-                                this.state.navApps.googleMaps.appDeepLinkUriToUse +
-                                `dir/?api=1&destination=${address}&travelmode=${travelMode}`,
-                            navigateByLatAndLon: ({ address, travelMode, lat, lon }) =>
-                                encodeURI(
-                                    this.state.navApps.googleMaps.appDeepLinkUriToUse +
-                                    `search/?api=1&query=${lat},${lon}`
-                                ),
-                            searchLocationByLatAndLon: ({ lat, lon }) =>
-                                encodeURI(
-                                    this.state.navApps.googleMaps.appDeepLinkUriToUse +
-                                    `search/?api=1&query=${lat},${lon}`
-                                )
-                        }
-                    }),
-                    icon: props.googleMaps.icon
-                        ? props.googleMaps.icon
-                        : require("./assets/googleMapsIcon.png")
+                    ...googleMaps,
+                    ...props.googleMaps
                 },
                 ...Platform.select({
                     ios: {
-                        maps: {
-                            appDeepLinkUri: "maps://app",
-                            appDeepLinkUriToUse: "maps://app?",
-                            title: "maps",
-                            icon: props.maps.icon
-                                ? props.maps.icon
-                                : require("./assets/mapsIcon.png"),
-                            travelModes: {
-                                car: "d",
-                                foot: "w",
-                                publicTransit: "r"
-                            },
-                            navigateByAddress: ({ address, travelMode }) =>
-                                encodeURI(
-                                    this.state.navApps.maps.appDeepLinkUriToUse +
-                                    `daddr=${address}&dirflg=${travelMode}`
-                                ),
-                            navigateByLatAndLon: ({ address, travelMode, lat, lon }) =>
-                                encodeURI(
-                                    this.state.navApps.maps.appDeepLinkUriToUse +
-                                    `daddr=${address}&dirflg=${travelMode}&ll=${llatan},${lon}`
-                                ),
-                            searchLocationByLatAndLon: ({ lat, lon }) =>
-                                encodeURI(
-                                    this.state.navApps.maps.appDeepLinkUriToUse +
-                                    `ll=${lat},${lon}`
-                                )
-                        }
+                        'maps': {
+                            ...maps,
+                            ...props.maps,
+                            appDeepLinkUri: 'maps://app',
+                            appDeepLinkUriToUse: 'maps://app?',
+                            navigateByAddress: ({addressToNavigate, travelMode}) => encodeURI(this.state.navApps.maps.appDeepLinkUriToUse + `daddr=${addressToNavigate}&dirflg=${travelMode}`),
+                            navigateByLatAndLon: ({addressToNavigate, travelMode, lat, lon}) => encodeURI(this.state.navApps.maps.appDeepLinkUriToUse + `daddr=${addressToNavigate}&dirflg=${travelMode}&ll=${llatan},${lon}`),
+                            searchLocationByLatAndLon: ({lat, lon}) => encodeURI(this.state.navApps.maps.appDeepLinkUriToUse + `ll=${lat},${lon}`)
+
+                        },
+
                     }
                 })
             },
-            modalVisible: false
+            modalVisible: false,
         };
-        this.actionSheetRef;
+        this.actionSheetRef = null;
     }
 
-    handleNavApp = navApp => {
-        const navAppOptions = this.props[navApp];
-        const navAppItem = this.state.navApps[navApp];
-        const { storeUri, appDeepLinkUri } = navAppItem;
-        const address = navAppOptions.address
-            ? navAppOptions.address
-            : this.props.address;
-        const lat = navAppOptions.lat ? navAppOptions.lat : "";
-        const lon = navAppOptions.lon ? navAppOptions.lon : "";
-        const travelMode = navAppOptions.travelMode ? navAppOptions.travelMode : "";
-        const navAppUri = navAppItem[navAppOptions.action]({
-            address,
-            lat,
-            lon,
-            travelMode
-        });
+    handleNavApp = async (navApp) => {
 
-        return Linking.canOpenURL(appDeepLinkUri)
-            .then(supported => {
-                if (!supported) {
-                    return Linking.openURL(storeUri);
-                } else {
-                    return Linking.openURL(navAppUri);
+
+        const {address} = this.props;
+        const {navApps} = this.state;
+        const navAppItem = navApps[navApp];
+        const {storeUri, appDeepLinkUri} = navApp;
+
+        const addressToNavigate = navAppItem.address ? navAppItem.address : address;
+
+        const lat = navAppItem.lat ? navAppItem.lat : '';
+        const lon = navAppItem.lon ? navAppItem.lon : '';
+        const travelMode = navAppItem.travelMode ? navAppItem.travelMode : '';
+        const navAppUri = navAppItem[navAppItem.action]({addressToNavigate, lat, lon, travelMode});
+
+        try {
+            const supported = await Linking.canOpenURL(navAppItem.appDeepLinkUri);
+            if (!supported) {
+
+                console.log("nooot supported" , storeUri)
+                console.log("navApps" , navAppItem.title)
+                var myUrl = "" 
+                if (Platform.OS === "android" && navAppItem.title == "waze") {
+                         myUrl = "https://play.google.com/store/apps/details?id=com.waze&hl=en&gl=FR"
+                } else if (Platform.OS === "ios" && navAppItem.title == "waze") {
+                         myUrl = "http://apps.apple.com/fr/app/navigation-waze-trafic-live/id323229106"
                 }
-            })
-            .catch(() => err => alert(err));
+
+                return await Linking.openURL(myUrl);
+            } else {
+                console.log(" supported")
+                return await Linking.openURL(navAppUri);
+            }
+
+        }
+        catch (e) {
+            alert(e)
+        }
+
     };
 
     renderNavigationApps = () => {
-        const { iconSize } = this.props;
-        return Object.keys(this.state.navApps).map((navApp, key) => {
-            const navAppItem = this.state.navApps[navApp];
+        const {iconSize} = this.props;
+        const {navApps} = this.state;
+        return (
+            Object.keys(navApps).map((navApp, key) => {
 
-            return (
-                <TouchableOpacity onPress={() => this.handleNavApp(navApp)} key={key}>
-                    <Image
-                        style={{ width: iconSize, height: iconSize }}
-                        source={navAppItem.icon}
-                    />
-                </TouchableOpacity>
-            );
-        });
+                const navAppItem = navApps[navApp];
+
+                return (
+                    <TouchableOpacity onPress={() => this.handleNavApp(navApp)} key={key}>
+                        <Image style={{width: iconSize, height: iconSize}} source={navAppItem.icon}/>
+                    </TouchableOpacity>
+                )
+
+            })
+        )
     };
 
     renderNavigationAppsAsModal = () => {
-        const setModalVisible = visible => {
-            this.setState({ modalVisible: visible });
+
+        const setModalVisible = (visible) => {
+            this.setState({modalVisible: visible});
         };
         const renderModalBtnOpen = () => {
-            const {
-                modalBtnOpenStyle,
-                modalBtnOpenTitle,
-                modalBtnOpenTextStyle,
-                modalBtnOpenDisable
-            } = this.props;
+
+            const {modalBtnOpenStyle, modalBtnOpenTitle, modalBtnOpenTextStyle, disable} = this.props;
 
             return (
-                <TouchableOpacity
-                    style={modalBtnOpenStyle}
-                    onPress={() => (modalBtnOpenDisable ? null : setModalVisible(true))}
-                >
+                <TouchableOpacity style={modalBtnOpenStyle} onPress={() => disable ? null : setModalVisible(true)}>
                     <Text style={modalBtnOpenTextStyle}>{modalBtnOpenTitle}</Text>
                 </TouchableOpacity>
-            );
+            )
+
         };
         const renderModalBtnClose = () => {
-            const {
-                modalBtnCloseStyle,
-                modalBtnCloseTitle,
-                modalBtnCloseTextStyle
-            } = this.props;
+
+
+            const {modalBtnCloseStyle, modalBtnCloseTitle, modalBtnCloseTextStyle} = this.props;
 
             return (
-                <TouchableOpacity
-                    style={modalBtnCloseStyle}
-                    onPress={() => {
-                        setModalVisible(false);
-                    }}
-                >
+                <TouchableOpacity style={modalBtnCloseStyle} onPress={() => {
+                    setModalVisible(false)
+                }}>
                     <Text style={modalBtnCloseTextStyle}>{modalBtnCloseTitle}</Text>
                 </TouchableOpacity>
-            );
+            )
         };
 
-        const {
-            modalProps,
-            modalContainerStyle,
-            modalCloseBtnContainerStyle
-        } = this.props;
+
+        const {modalProps, modalContainerStyle, modalCloseBtnContainerStyle} = this.props;
+        const {modalVisible} = this.state;
         return (
             <React.Fragment>
                 {renderModalBtnOpen()}
-                <Modal {...modalProps} visible={this.state.modalVisible}>
+                <Modal {...modalProps} visible={modalVisible}>
                     <View style={styles.modalStyle}>
                         <View style={modalContainerStyle}>
                             {this.renderNavigationAppsView()}
@@ -259,157 +222,141 @@ class NavigationApps extends Component {
                     </View>
                 </Modal>
             </React.Fragment>
-        );
+        )
     };
 
     renderNavigationAppsAsActionSheet = () => {
+
+
         const renderActionSheetOpenBtn = () => {
-            const {
-                actionSheetBtnOpenStyle,
-                actionSheetBtnOpenTitle,
-                actionSheetBtnOpenTextStyle,
-                actionSheetBtnOpenDisable
-            } = this.props;
+            const {actionSheetBtnOpenStyle, actionSheetBtnOpenTitle, actionSheetBtnOpenTextStyle, disable} = this.props;
             return (
-                <TouchableOpacity
-                    style={actionSheetBtnOpenStyle}
-                    onPress={() =>
-                        actionSheetBtnOpenDisable ? null : this.actionSheetRef.show()
-                    }
-                >
-                    {this.props.actionSheetBtnComponent ? (
-                        this.props.actionSheetBtnComponent()
-                    ) : (
-                            <Text style={actionSheetBtnOpenTextStyle}>
-                                {actionSheetBtnOpenTitle}
-                            </Text>
-                        )}
+                <TouchableOpacity style={actionSheetBtnOpenStyle}
+                                  onPress={() => disable ? null : this.actionSheetRef.show()}>
+                    <Text style={actionSheetBtnOpenTextStyle}>{actionSheetBtnOpenTitle}</Text>
                 </TouchableOpacity>
-            );
+            )
+
         };
         const actionSheetOptions = () => {
-            const { actionSheetBtnCloseTitle } = this.props;
-            const actionSheetArray = ["Waze", "Google Maps"];
 
-            if (Platform.OS === "ios") {
-                actionSheetArray.push("Maps");
-            }
+            const {actionSheetBtnCloseTitle} = this.props;
+            const {navApps} = this.state;
+            const actionSheetArray = Object.keys(navApps).map((navApp, key) => {
+
+                const navAppItem = navApps[navApp];
+                return navAppItem.title
+
+            });
             actionSheetArray.push(actionSheetBtnCloseTitle);
-            return actionSheetArray;
+            return actionSheetArray
+
         };
-        const { actionSheetTitle } = this.props;
-        const originalValues = [];
-        originalValues["Waze"] = "waze";
-        originalValues["Google Maps"] = "googleMaps";
-        originalValues["Maps"] = "maps";
+        const {actionSheetTitle} = this.props;
+
         return (
             <React.Fragment>
                 {renderActionSheetOpenBtn()}
                 <ActionSheet
-                    ref={ref => (this.actionSheetRef = ref)}
+                    ref={ref => this.actionSheetRef = ref}
                     title={actionSheetTitle}
                     options={actionSheetOptions()}
                     cancelButtonIndex={actionSheetOptions().length - 1}
                     destructiveButtonIndex={actionSheetOptions().length - 1}
-                    onPress={index => {
+                    onPress={async (index) => {
+
                         if (index !== actionSheetOptions().length - 1) {
-                            this.handleNavApp(originalValues[actionSheetOptions()[index]]);
+                            await this.handleNavApp(actionSheetOptions()[index])
                         }
+
+
                     }}
                 />
             </React.Fragment>
-        );
+        )
     };
 
     renderNavigationAppsView = () => {
-        const { row, viewContainerStyle } = this.props;
+        const {row, viewContainerStyle} = this.props;
         return (
-            <View
-                style={[{ flexDirection: row ? "row" : "column" }, viewContainerStyle]}
-            >
+            <View style={[{flexDirection: row ? 'row' : 'column'}, viewContainerStyle]}>
                 {this.renderNavigationApps()}
             </View>
-        );
+        )
     };
 
     renderMainView = () => {
-        const { viewMode } = this.props;
+        const {viewMode} = this.props;
         switch (viewMode) {
             case "view":
-                return this.renderNavigationAppsView();
-            case "modal":
-                return this.renderNavigationAppsAsModal();
+                return (
+                    this.renderNavigationAppsView()
+                );
+            case "modal" :
+                return (
+                    this.renderNavigationAppsAsModal()
+                );
             case "sheet":
-                return this.renderNavigationAppsAsActionSheet();
+                return (
+                    this.renderNavigationAppsAsActionSheet()
+                );
             default:
-                return this.renderNavigationAppsView();
+                return (
+                    this.renderNavigationAppsView()
+                );
         }
+
+
     };
 
     render() {
-        return this.renderMainView();
+
+        return (
+            this.renderMainView()
+        )
     }
 }
 
 const styles = StyleSheet.create({
+
     modalStyle: {
         flex: 1,
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center"
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
+
 });
 
 NavigationApps.defaultProps = {
-    waze: {
-        action: wazeActions.navigateByAddress,
-        address: "",
-        lat: "",
-        lon: "",
-        icon: null
-    },
-    googleMaps: {
-        action: googleMapsActions.navigateByAddress,
-        address: "",
-        lat: "",
-        lon: "",
-        travelMode: "driving",
-        icon: null
-    },
-    maps: {
-        action: mapsActions.navigateByAddress,
-        address: "",
-        lat: "",
-        lon: "",
-        travelMode: "d",
-        icon: null
-    },
+
     iconSize: 100,
-    viewMode: "view",
+    viewMode: 'view',
     row: false,
     viewContainerStyle: {},
     modalProps: {},
     modalContainerStyle: {},
-    modalBtnOpenTitle: "open modal",
-    modalBtnCloseTitle: "close modal",
+    modalBtnOpenTitle: 'open modal',
+    modalBtnCloseTitle: 'close modal',
     modalBtnCloseContainerStyle: {},
     modalBtnCloseStyle: {},
     modalBtnCloseTextStyle: {},
     modalBtnOpenTextStyle: {},
     modalBtnOpenStyle: {},
-    modalBtnDisable: false,
-    actionSheetBtnOpenTitle: "open action sheet",
-    actionSheetBtnCloseTitle: "close action sheet",
-    actionSheetTitle: "choose navigation app",
+    actionSheetBtnOpenTitle: 'open action sheet',
+    actionSheetBtnCloseTitle: 'close action sheet',
+    actionSheetTitle: 'choose navigation app',
     actionSheetBtnOpenStyle: {},
     actionSheetBtnOpenTextStyle: {},
-    actionSheetBtnOpenDisable: false,
-    address: ""
+    address: '',
+    disable: false,
+
 };
 NavigationApps.propTypes = {
-    appsOptions: PropTypes.object,
+
+    disable: PropTypes.bool,
     iconSize: PropTypes.number,
-    viewMode: PropTypes.oneOf(["view", "modal", "sheet"]),
+    viewMode: PropTypes.oneOf(['view', 'modal', 'sheet']),
     row: PropTypes.bool,
     address: PropTypes.string,
     containerStyle: ViewPropTypes.style,
@@ -427,9 +374,10 @@ NavigationApps.propTypes = {
     actionSheetTitle: PropTypes.string,
     actionSheetBtnOpenStyle: ViewPropTypes.style,
     actionSheetBtnOpenTextStyle: Text.propTypes.style,
-    actionSheetBtnOpenDisable: PropTypes.bool,
-    modalBtnOpenDisable: PropTypes.bool,
-    actionSheetBtnComponent: PropTypes.func
+    waze:PropTypes.object,
+    googleMaps:PropTypes.object,
+    maps:PropTypes.object
+
 };
 
-export { NavigationApps };
+export {NavigationApps}
