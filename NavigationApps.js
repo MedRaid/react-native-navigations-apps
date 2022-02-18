@@ -145,6 +145,11 @@ class NavigationApps extends Component {
                 } else if (Platform.OS === "ios" && navAppItem.title == "waze") {
                          myUrl = "http://apps.apple.com/fr/app/navigation-waze-trafic-live/id323229106"
                 }
+                 if (Platform.OS === "android" && navAppItem.title == "google maps") { 
+                    myUrl = "https://play.google.com/store/apps/details?id=com.google.android.apps.maps&hl=en&gl=FR"
+                }  else if (Platform.OS === "ios" && navAppItem.title == "google maps") {
+                    myUrl = "https://apps.apple.com/fr/app/google-maps-gps-transports/id585027354"
+                }
 
                 return await Linking.openURL(myUrl);
             } else {
